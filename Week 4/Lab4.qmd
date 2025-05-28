@@ -1,0 +1,370 @@
+---
+title: "Mistyrose_P1_Week4lab"
+author: "SKYRA CHOO, TAY YONG JUN, PEH BOON YEW, HO KING HONH, SEAN LEE WEI CHUAN, MUHAMMAD SYAHMI BIN SAMRI"
+date: "21 May 2025"
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+
+# Install and load ggmosaic if not available
+if (!require(ggmosaic, quietly = TRUE)) {
+  install.packages("ggmosaic")
+  library(ggmosaic)
+}
+```
+
+# 1 Visualizing the Distribution of Travelers on the Titanic
+
+The spreadsheet at `titanic.csv` contains information about the passengers and crew aboard the Titanic during its maiden voyage in 1912, which tragically ended when the ship hit an iceberg and sank.
+
+```{r}
+#| label: load-data
+#| message: false
+# Load the Titanic data
+titanic <- read_csv("titanic.csv")
+
+# Display the structure of the data
+glimpse(titanic)
+
+# Check the unique values in key variables
+cat("Classes:", unique(titanic$class), "\n")
+cat("Survival values:", unique(titanic$survived), "\n")
+```
+
+## 1.1 Bar Chart of Travelers by Class
+
+Create a bar chart displaying the number of travelers by class (1st, 2nd, 3rd, and crew). Include a plot title and a caption attributing the source as "Encyclopedia Titanica (2023)."
+
+```{r}
+#| label: bar-chart-class
+#| fig-width: 8
+#| fig-height: 6
+library(ggplot2)
+library(dplyr)
+
+# Count travelers by class
+class_counts <- titanic %>%
+  count(class, name = "count")
+
+# Create horizontal bar chart with outlined bars
+ggplot(class_counts, aes(x = reorder(class, count), y = count)) +
+  geom_col(fill = NA, color = "black", width = 0.7) +
+  coord_flip() +
+  geom_text(aes(label = count), hjust = -0.1, size = 4) +
+  labs(
+    title = "Titanic Travelers by Class",
+    x = NULL,
+    y = NULL,
+    caption = "Source: Encyclopedia Titanica (2023)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.text = element_text(size = 12),
+    plot.caption = element_text(hjust = 0.5)
+  ) +
+  expand_limits(y = max(class_counts$count) * 1.1)  # Add space for labels
+
+
+# Display the counts
+class_counts
+```
+
+## 1.2 Dodged Bar Chart of Travelers by Class and Survival
+
+Use a dodged bar chart to visualize the dependence of the survival rate on the class in which a person traveled.
+
+```{r}
+#| label: dodged-bar-chart
+#| fig-width: 10
+#| fig-height: 6
+library(ggplot2)
+library(dplyr)
+
+# Count travelers by class and survival
+survival_counts <- titanic %>%
+  count(class, survived, name = "count")
+
+# Create horizontal dodged bar chart
+ggplot(survival_counts, aes(x = class, y = count, fill = survived)) +
+  geom_col(position = "dodge", width = 0.7) +
+  geom_text(
+    aes(label = count),
+    position = position_dodge(width = 0.7),
+    hjust = -0.1,
+    size = 3.5
+  ) +
+  coord_flip() +
+  scale_fill_manual(values = c("FALSE" = "coral", "TRUE" = "lightblue"), 
+                    labels = c("FALSE" = "FALSE", "TRUE" = "TRUE")) +
+  labs(
+    title = "Titanic Travelers by Class and Survival",
+    x = NULL,
+    y = NULL,
+    fill = "Survived",
+    caption = "Source: Encyclopedia Titanica (2023)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    plot.caption = element_text(hjust = 0.5),
+    legend.position = "right"
+  ) +
+  expand_limits(y = max(survival_counts$count) * 1.1)
+
+
+# Display the counts
+survival_counts
+```
+
+## 1.3 Mosaic Plot
+
+When working with two categorical variables, such as class and survival, mosaic plots provide an alternative to segmented bar charts. Use the `geom_mosaic()` function from the ggmosaic package to create a mosaic plot of the data in `titanic`.
+
+```{r}
+#| label: mosaic-plot-labeled
+#| fig-width: 10
+#| fig-height: 6
+library(ggplot2)
+library(ggmosaic)
+library(dplyr)
+
+# Base plot
+p <- ggplot(data = titanic) +
+  geom_mosaic(aes(x = product(class), fill = survived, weight = 1)) +
+  scale_fill_manual(values = c("FALSE" = "coral", "TRUE" = "lightblue")) +
+  labs(
+    title = "Titanic Travelers by Class and Survival",
+    x = "Class",
+    y = "Survived",
+    fill = "Survived",
+    caption = "Source: Encyclopedia Titanica (2023)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+    legend.position = "right",
+    plot.caption = element_text(hjust = 0.5)
+  )
+
+# Build the plot to extract tile positions
+pbuilt <- ggplot_build(p)
+geom_data <- pbuilt$data[[1]]
+
+# Get count info to join back
+counts <- titanic %>%
+  count(class, survived, name = "count")
+
+# Combine count and geometry data (assuming order is consistent)
+label_data <- cbind(counts, 
+                    x = (geom_data$xmin + geom_data$xmax) / 2,
+                    y = (geom_data$ymin + geom_data$ymax) / 2)
+
+# Add text to plot
+p + geom_text(data = label_data,
+              aes(x = x, y = y, label = count),
+              inherit.aes = FALSE,
+              size = 4)
+
+```
+
+## 1.4 Pros and Cons of Mosaic Plots
+
+State one advantage and one disadvantage of using the mosaic plot instead of the dodged bar chart for the Titanic data.
+
+**Advantage:** The mosaic plot effectively shows both the relative proportions of each class among all travelers (width of each section) and the survival rate within each class (height of colored segments), providing a comprehensive view of both marginal and conditional distributions in a single visualization.
+
+**Disadvantage:** The mosaic plot makes it more difficult to compare exact counts between groups compared to the dodged bar chart, as the varying widths of the class sections make direct visual comparison of survival numbers across classes less intuitive.
+
+## 1.5 Alternative Visualization
+
+Using `ggplot2` (and any necessary add-on packages), create an alternative visualization to bar and mosaic plot that illustrates the same bivariate relationship between class and survival. Then, discuss the **advantages** and **limitations** of your chosen visualization compared to bar and mosaic plots.
+
+```{r}
+#| label: alternative-viz
+#| fig-width: 10
+#| fig-height: 6
+# Create a stacked percentage bar chart
+survival_props <- titanic %>%
+  count(class, survived) %>%
+  group_by(class) %>%
+  mutate(
+    total = sum(n),
+    percentage = n / total * 100,
+    survived_label = ifelse(survived, "Survived", "Did not survive")
+  )
+
+ggplot(survival_props, aes(x = class, y = percentage, fill = survived_label)) +
+  geom_col(position = "stack", alpha = 0.8) +
+  scale_fill_manual(values = c("Did not survive" = "coral", "Survived" = "lightblue")) +
+  labs(
+    title = "Survival Rates by Class on the Titanic",
+    subtitle = "Percentage of survivors and non-survivors within each class",
+    x = "Class",
+    y = "Percentage (%)",
+    fill = "Survival Status",
+    caption = "Source: Encyclopedia Titanica (2023)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+    legend.position = "bottom"
+  ) +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 3.5, color = "white", fontface = "bold") +
+  scale_y_continuous(limits = c(0, 100))
+
+# Display the proportions
+survival_props %>%
+  select(class, survived_label, n, percentage) %>%
+  arrange(class, desc(survived_label))
+```
+
+**Discussion:**
+
+**Advantages:** - **Standardized comparison**: The stacked percentage bar chart allows for direct comparison of survival rates across classes since all bars reach 100%, making it easy to see that 1st class had the highest survival rate (\~62%) while crew had the lowest (\~24%). - **Clear proportional relationships**: The visualization immediately shows the proportion of survivors vs. non-survivors within each class, making survival rates the primary focus rather than absolute numbers. - **Intuitive interpretation**: Percentages are easily understood and the stacked format clearly shows the complementary nature of survival/non-survival outcomes.
+
+**Limitations:** - **Loss of absolute numbers**: Unlike bar charts, this visualization doesn't show the actual number of people in each class, which could be important for understanding the scale of the tragedy. - **Less detailed than mosaic plots**: While easier to read than mosaic plots, it doesn't show the relative size of each class in the overall population as effectively as the mosaic plot's varying widths. - **Binary focus**: The stacked format works well for binary outcomes but would be less effective if there were more than two survival categories to display.
+
+# 2 Water Potability Analysis
+
+## 2.1 Data Source and Description
+
+**Data URL:** https://www.kaggle.com/datasets/adityakadiwal/water-potability/data
+
+The water potability dataset contains water quality measurements that determine the safety of water for human consumption. This dataset was collected from various water sources and includes 9 water quality parameters measured across 3,276 different water samples. The key variables include:
+
+-   **pH**: Acidity/alkalinity level of water (normal range: 6.5-8.5)
+-   **Hardness**: Calcium and magnesium mineral content (mg/L)
+-   **Solids**: Total dissolved solids concentration (mg/L)
+-   **Chloramines**: Disinfectant concentration (mg/L)
+-   **Sulfate**: Sulfate ion concentration (mg/L)
+-   **Conductivity**: Electrical conductivity (μS/cm)
+-   **Organic_carbon**: Organic carbon content (mg/L)
+-   **Trihalomethanes**: Byproduct concentration from chlorination (μg/L)
+-   **Turbidity**: Cloudiness measure (NTU)
+-   **Potability**: Binary outcome (0 = not potable, 1 = potable)
+
+```{r}
+#| label: load-water-data
+#| message: false
+# Load the water potability data
+water <- read_csv("water_potability.csv")
+
+# Display the structure of the data
+glimpse(water)
+
+# Check for missing values
+cat("Missing values per variable:\n")
+sapply(water, function(x) sum(is.na(x)))
+
+# Summary statistics
+cat("\nSummary statistics:\n")
+summary(water)
+```
+
+## 2.2 Water Quality Visualization
+
+The following scatter plot visualizes the relationship between pH levels and conductivity, with additional aesthetic mappings for sulfate content and water potability:
+
+```{r}
+#| label: water-quality-plot
+#| fig-width: 10
+#| fig-height: 7
+library(ggplot2)
+library(dplyr)
+
+# Remove rows with missing values for the variables we're plotting
+water_clean <- water %>%
+  filter(!is.na(ph), !is.na(Conductivity), !is.na(Sulfate), !is.na(Potability))
+
+# Create the visualization
+ggplot(water_clean, aes(x = ph, y = Conductivity)) +
+  geom_point(aes(color = factor(Potability), size = Sulfate), alpha = 0.7) +
+  scale_color_manual(
+    values = c("0" = "coral", "1" = "lightblue"),
+    labels = c("0" = "Not Potable", "1" = "Potable")
+  ) +
+  scale_size_continuous(
+    range = c(1, 4),
+    guide = guide_legend(override.aes = list(alpha = 1))
+  ) +
+  labs(
+    title = "Water Quality Assessment: pH vs Conductivity",
+    subtitle = "Point size represents sulfate concentration, color indicates potability",
+    x = "pH Level",
+    y = "Conductivity (μS/cm)",
+    color = "Water Potability",
+    size = "Sulfate (mg/L)",
+    caption = "Source: Kaggle Water Potability Dataset"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    axis.text = element_text(size = 11),
+    axis.title = element_text(size = 12),
+    legend.position = "right",
+    plot.caption = element_text(hjust = 0.5)
+  ) +
+  facet_wrap(~factor(Potability, labels = c("Not Potable", "Potable")), ncol = 2)
+
+# Display counts by potability
+water_clean %>%
+  count(Potability, name = "count") %>%
+  mutate(Potability = ifelse(Potability == 1, "Potable", "Not Potable"))
+```
+
+## 2.3 Aesthetic Mapping Justification
+
+**Color Mapping (Potability):** We mapped the potability variable to the color aesthetic because this is a categorical binary variable that represents the most important outcome of interest. Color is an appropriate choice for nominal data as it allows for immediate visual distinction between potable and non-potable water samples. The contrasting colors (coral for non-potable, light blue for potable) follow perceptual best practices by being easily distinguishable and avoiding problematic color combinations for colorblind users.
+
+**Size Mapping (Sulfate):** We mapped the sulfate concentration to the size aesthetic because sulfate is a continuous quantitative variable where larger values represent higher concentrations. Size is semantically appropriate for extensive variables like concentration - when sulfate content increases, the visual representation (point size) proportionally increases. This follows the principle that visual properties should correspond to the mathematical properties of the data, making larger sulfate concentrations immediately apparent through larger points.
+
+## 2.4 Key Insights
+
+The visualization reveals that **water potability is not strongly determined by pH and conductivity levels alone**, as both potable and non-potable water samples show considerable overlap across the pH-conductivity space. However, there appears to be a **slight concentration of non-potable samples in the higher conductivity ranges (above 400 μS/cm)**, suggesting that extremely high conductivity may be associated with water safety concerns. The sulfate concentrations (represented by point size) vary considerably within both potable and non-potable categories, indicating that sulfate levels alone are not a definitive predictor of water safety, but rather that water potability depends on a complex interaction of multiple chemical parameters.
+
+# 3 Reflections
+
+Write a brief team reflection (2–4 sentences each) addressing the following:
+
+## 3.1 Key takeaway
+
+What is one thing you learned in today's lab? Explain why this point stood out to you.
+
+The most significant learning from this lab was understanding how different visualization types can reveal different aspects of the same data relationship. While the dodged bar chart clearly showed absolute numbers for comparison, the mosaic plot revealed both the relative size of each class and survival rates simultaneously, and the stacked percentage chart standardized comparisons across groups. This stood out because it demonstrated that choosing the right visualization depends not just on the data type, but on what specific insights you want to emphasize to your audience.
+
+## 3.2 Challenges
+
+What did you find confusing or difficult?
+
+The most challenging aspect was working with the `geom_mosaic()` function from the ggmosaic package, particularly understanding the `product()` syntax for specifying variables and getting the proportions to display correctly. Additionally, ensuring consistent color schemes and formatting across all three visualization types required careful attention to detail. The mosaic plot's interpretation was also initially confusing, as it requires understanding both the width (marginal distribution) and height (conditional distribution) simultaneously.
+
+## 3.3 AI assistance
+
+If you used any generative AI tools (e.g., ChatGPT or GitHub Copilot), explain how they helped.
+
+AI assistance was used to help structure the code efficiently and troubleshoot syntax issues, particularly with the more complex ggplot2 customizations and the mosaic plot implementation. The AI helped suggest appropriate color palettes that would work well for accessibility and provided guidance on best practices for labeling and formatting the visualizations. It was particularly helpful in generating the percentage calculations for the stacked bar chart and ensuring the code followed tidyverse style conventions.
+
+## 3.4 Teamwork
+
+How did your team collaborate on this assignment? Identify one strength and one area for improvement.
+
+Our team collaborated effectively by dividing the work among different visualization types and then reviewing each other's code for consistency and clarity. One strength was our systematic approach to ensuring all plots had consistent styling, color schemes, and professional formatting. An area for improvement would be to spend more time initially discussing the interpretation and analysis of each visualization type, as we focused heavily on the technical implementation but could have benefited from more collaborative discussion about the insights each chart revealed about the Titanic data.
+
+## 3.5 Additional feedback (optional)
+
+Any other comments on this module or the exercise.
+
+This lab provided an excellent hands-on introduction to the concept that data visualization is not just about creating charts, but about choosing the right chart type to tell a specific story with your data. The Titanic dataset was particularly engaging because it allowed us to explore a historically significant event while learning technical skills. It would be beneficial to have more exercises like this that combine real-world data with multiple visualization approaches, as it reinforces the importance of considering your audience and message when designing visualizations.
