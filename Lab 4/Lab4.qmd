@@ -1,7 +1,7 @@
 ---
 title: "Mistyrose_P1_Week4lab"
 author: "SKYRA CHOO, TAY YONG JUN, PEH BOON YEW, HO KING HONH, SEAN LEE WEI CHUAN, MUHAMMAD SYAHMI BIN SAMRI"
-date: "21 May 2025"
+date: "28 May 2025"
 format: html
 ---
 
@@ -40,7 +40,7 @@ Create a bar chart displaying the number of travelers by class (1st, 2nd, 3rd, a
 #| fig-height: 6
 gg_bar <- ggplot(titanic_count, aes(y = class, x = n)) +
   geom_bar(stat = "identity", fill = NA, color = "black") +  
-  geom_text(aes(label = n), hjust = -0.1, size = 5) +         
+  geom_text(aes(label = n), hjust = -0.2, size = 5) +         
   labs(
     title = "Titanic Travelers by Class",
     caption = "Source: Encyclopedia Titanica (2023)", x = NULL, y = NULL
@@ -218,7 +218,7 @@ water_clean <- water %>%
 
 # Create the visualization
 ggplot(water_clean, aes(x = ph, y = Conductivity)) +
-  geom_point(aes(color = factor(Potability), size = Sulfate), alpha = 0.7) +
+  geom_point(aes(color = factor(Potability), size = log(Sulfate + 1)), alpha = 0.7) +
   scale_color_manual(
     values = c("0" = "coral", "1" = "lightblue"),
     labels = c("0" = "Not Potable", "1" = "Potable")
@@ -245,7 +245,7 @@ ggplot(water_clean, aes(x = ph, y = Conductivity)) +
     legend.position = "right",
     plot.caption = element_text(hjust = 0.5)
   ) +
-  facet_wrap(~factor(Potability, labels = c("Not Potable", "Potable")), ncol = 2)
+  facet_wrap(~factor(Potability, labels = c("Not Potable", "Potable")), ncol = 1)
 
 # Display counts by potability
 water_clean %>%
