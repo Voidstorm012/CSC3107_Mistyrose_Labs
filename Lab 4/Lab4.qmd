@@ -271,28 +271,28 @@ Write a brief team reflection (2–4 sentences each) addressing the following:
 
 What is one thing you learned in today's lab? Explain why this point stood out to you.
 
-The most significant learning from this lab was understanding how different visualization types can reveal different aspects of the same data relationship. While the dodged bar chart clearly showed absolute numbers for comparison, the mosaic plot revealed both the relative size of each class and survival rates simultaneously, and the stacked percentage chart standardized comparisons across groups. This stood out because it demonstrated that choosing the right visualization depends not just on the data type, but on what specific insights you want to emphasize to your audience.
+This lab taught us how different visualization types can display the data differently in different point of view using the same variables mapping together and when to use specific type of chart depending the type of data relationship to plot the graph such as mapping discrete or continuous data, also the number of data use to plot the graph can open up different perspective of information.
 
 ## 3.2 Challenges
 
 What did you find confusing or difficult?
 
-The most challenging aspect was working with the `geom_mosaic()` function from the ggmosaic package, particularly understanding the `product()` syntax for specifying variables and getting the proportions to display correctly. Additionally, ensuring consistent color schemes and formatting across all three visualization types required careful attention to detail. The mosaic plot's interpretation was also initially confusing, as it requires understanding both the width (marginal distribution) and height (conditional distribution) simultaneously.
+The most challenging part was making the decision of which type of plot to use as different plots can display the data differently, the selection of data to use to plot the relationship is also challenging as there's a need to find the most relevant features.
 
 ## 3.3 AI assistance
 
 If you used any generative AI tools (e.g., ChatGPT or GitHub Copilot), explain how they helped.
 
-AI assistance was used to help structure the code efficiently and troubleshoot syntax issues, particularly with the more complex ggplot2 customizations and the mosaic plot implementation. The AI helped suggest appropriate color palettes that would work well for accessibility and provided guidance on best practices for labeling and formatting the visualizations. It was particularly helpful in generating the percentage calculations for the stacked bar chart and ensuring the code followed tidyverse style conventions.
+AI tools is used to aid us in learning on how parts of the ggplot works to understand better, aid us troubleshoot such as plot not displaying correctly and errors we encountered along the way where Google search does not provide effective solutions.
 
 ## 3.4 Teamwork
 
 How did your team collaborate on this assignment? Identify one strength and one area for improvement.
 
-Our team collaborated effectively by dividing the work among different visualization types and then reviewing each other's code for consistency and clarity. One strength was our systematic approach to ensuring all plots had consistent styling, color schemes, and professional formatting. An area for improvement would be to spend more time initially discussing the interpretation and analysis of each visualization type, as we focused heavily on the technical implementation but could have benefited from more collaborative discussion about the insights each chart revealed about the Titanic data.
+Our team divide workload to 1 question 3 members will work on and from there each member work on parts of the question they are allocated and eventually everyone provide their feedback as the team leader consolidate everything and summarize the feedback. Strength would be we are able to coordinate better as a team and one of the area of improvement would be to communicate better.
 
 ## 3.5 Additional feedback (optional)
 
 Any other comments on this module or the exercise.
 
-This lab provided an excellent hands-on introduction to the concept that data visualization is not just about creating charts, but about choosing the right chart type to tell a specific story with your data. The Titanic dataset was particularly engaging because it allowed us to explore a historically significant event while learning technical skills. It would be beneficial to have more exercises like this that combine real-world data with multiple visualization approaches, as it reinforces the importance of considering your audience and message when designing visualizations.
+This lab is good in providing the basics on how to create charts based on the data that is provided and allow us to make better decision making on which plot to used based on the data provided.
