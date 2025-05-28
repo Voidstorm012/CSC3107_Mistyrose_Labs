@@ -1,0 +1,8 @@
+"0","#| label: add_sex_column"
+"0","#| echo: true"
+"0",""
+"0","# Convert NA strings to actual NA values, convert to numeric, and add sex column"
+"0","data_relevant_years <- data_relevant_years %>%"
+"0","  mutate(across(-`Data Series`, ~ na_if(tolower(.), ""na""))) %>%"
+"0","  mutate(across(-`Data Series`, as.numeric)) %>%"
+"0","  mutate(sex = rep(c(""Male"", ""Female""), each = 25))"

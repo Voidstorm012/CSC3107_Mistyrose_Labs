@@ -1,0 +1,8 @@
+"0","#| label: Compare to actual data"
+"0","#| message: false"
+"0",""
+"0","# Compare to actual data"
+"0","world_ref <- readr::read_csv(""country_profiles_2019.csv"")"
+"0","waldo::compare(country, world_ref, tolerance = 1e-12)"
+"1","[32m✔[39m No differences
+"

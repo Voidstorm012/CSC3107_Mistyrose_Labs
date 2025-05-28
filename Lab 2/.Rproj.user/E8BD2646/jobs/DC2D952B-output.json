@@ -1,0 +1,6 @@
+[1,"Installing 'countrycode' ...\n"]
+[2,"trying URL 'https://cran.rstudio.com/bin/macosx/big-sur-arm64/contrib/4.5/countrycode_1.6.1.tgz'\n"]
+[2,"Content type 'application/x-gzip' length 1258021 bytes (1.2 MB)\n==================================================\ndownloaded 1.2 MB\n\n"]
+[1,"The downloaded binary packages are in\n"]
+[1,"\t/var/folders/j4/l3r04mp125n6c221dwqbgp8m0000gn/T//RtmpP3bxU2/downloaded_packages\n"]
+[2,"\n\n✔ Package 'countrycode' successfully installed.\n"]

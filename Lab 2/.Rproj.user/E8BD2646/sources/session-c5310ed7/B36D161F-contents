@@ -1,0 +1,182 @@
+---
+title: "CSC3107 Lab 2 (Mistyrose)"
+author: 
+  - "SKYRA CHOO"
+  - "TAY YONG JUN"
+  - "PEH BOON YEW"
+  - "HO KING HONH"
+  - "SEAN LEE WEI CHUAN"
+  - "MUHAMMAD SYAHMI BIN SAMRI"
+date: "2025-05-14"
+format: html
+editor: visual
+---
+
+## 2. Population Statistics for Singapore
+
+This section focuses on preparing the data needed to plot Singapore's population pyramids from 1960 to 2020. A population pyramid is a two-sided bar chart that displays the size of each age cohort, split by sex.
+
+```{r}
+#| label: setup
+#| echo: true
+#| message: false
+
+library(tidyverse)
+library(readxl)
+library(knitr)
+```
+
+### 2.1 Import data
+
+The relevant data can be found in rows 37-86 of sheet T4 in the outputFile.xlsx file.
+
+```{r}
+#| label: import_data
+#| echo: true
+
+# Read the sheet and skip top 10 rows to get proper column headers
+# data <- read_xlsx("outputFile.xlsx", sheet = "T4", skip = 10)
+
+header_row <- read_excel("outputFile.xlsx", sheet = "T4", range = "A11:BN11", col_names = FALSE)
+
+col_names <- as.character(unlist(header_row))
+
+sg_data <- read_excel("outputFile.xlsx", sheet = "T4", range = "A37:BN86", col_names = FALSE)
+
+colnames(sg_data) <- col_names
+colnames(sg_data)[1] <- "Data Series"
+data <- sg_data %>% select_if(~ !all(is.na(.)))
+
+# Preview the raw data
+kable(head(data, 5), caption = "Preview of Imported Raw Data")
+```
+
+### 2.2 Restrict to relevant years
+
+We'll keep data only for the years 1960, 1970, ..., 2020.
+
+```{r}
+#| label: restrict_years
+#| echo: true
+
+# Select years in 10-year intervals from 1960 to 2020
+years <- as.character(seq(1960, 2020, by = 10))
+columns_to_keep <- c("Data Series", years)
+data_relevant_years <- data[, intersect(columns_to_keep, names(data))]
+
+# Extract rows 37-86 (which is 26:75 after skipping 10 rows)
+# data_relevant_years <- slice(data_relevant_years, 26:75)
+
+# Preview the filtered data
+kable(head(data_relevant_years, 5), caption = "Filtered Years (1960–2020), Rows 37–86")
+```
+
+### 2.3 Infer the oldest cohort size
+
+Some rows report data for 5-year cohorts (e.g., "25 - 29 Years"), whereas others contain cumulative counts (e.g., "70 Years & Over"). We'll use the cumulative values to estimate the size of the oldest five-year cohort.
+
+```{r}
+#| label: add_sex_column
+#| echo: true
+
+# Convert NA strings to actual NA values, convert to numeric, and add sex column
+data_relevant_years <- data_relevant_years %>%
+  mutate(across(-`Data Series`, ~ na_if(tolower(.), "na"))) %>%
+  mutate(across(-`Data Series`, as.numeric)) %>%
+  mutate(sex = rep(c("Male", "Female"), each = 25))
+```
+
+```{r}
+#| label: infer_oldest_cohort
+#| echo: true
+
+# Define replacement rules for cumulative age groups
+replacement_rules <- tibble(
+  target = c("65 - 69 Years", "70 - 74 Years", "75 - 79 Years", "80 - 84 Years", "85 - 89 Years"),
+  source = c("65 Years & Over", "70 Years & Over", "75 Years & Over", "80 Years & Over", "85 Years & Over")
+)
+
+# Replace cumulative values with cohort-specific values
+data_relevant_years <- data_relevant_years %>%
+  left_join(replacement_rules, by = c("Data Series" = "target")) %>%
+  left_join(
+    data_relevant_years %>%
+      select(`Data Series`, sex, all_of(years)) %>%
+      rename(source = `Data Series`) %>%
+      rename_with(~ paste0("src_", .x), all_of(years)),
+    by = c("source" = "source", "sex" = "sex")
+  ) %>%
+  mutate(across(all_of(years), ~ coalesce(.x, get(paste0("src_", cur_column()))))) %>%
+  select(-starts_with("src_"), -source)
+
+# Check the results for the oldest cohorts
+kable(
+  filter(data_relevant_years, `Data Series` %in% replacement_rules$target) %>%
+    select(`Data Series`, sex, all_of(years)) %>%
+    head(),
+  caption = "Age Cohorts After Replacing Cumulative Values"
+)
+```
+
+### 2.4 Format Data
+
+We'll construct a data frame with these columns: - age: Lower age limit of the cohort - sex - year: Year of the data - pop: Population size
+
+```{r}
+#| label: format_data
+#| echo: true
+
+# Drop total population rows
+data_relevant_years <- data_relevant_years[-c(1, 26), ]
+
+# Remove cumulative rows like "70 Years & Over"
+data_relevant_years <- data_relevant_years %>%
+  filter(!str_detect(`Data Series`, "Years & Over"))
+
+# Extract age lower bound
+data_relevant_years <- data_relevant_years %>%
+  mutate(age = as.numeric(str_extract(`Data Series`, "^\\d+")))
+
+# Reshape from wide to long format
+data_relevant_years <- data_relevant_years %>%
+  select(age, sex, all_of(years)) %>%
+  pivot_longer(
+    cols = all_of(years),
+    names_to = "year",
+    values_to = "pop"
+  ) %>%
+  mutate(
+    year = as.integer(year),
+    sex = factor(sex, levels = c("Male", "Female"))
+  ) %>%
+  drop_na(pop) %>%
+  arrange(age, sex, year)
+
+# Filter to age <= 85
+data_relevant_years <- data_relevant_years %>%
+  filter(age <= 85)
+
+# Preview the final formatted data
+kable(head(data_relevant_years, 10), caption = "Final Formatted Data")
+```
+
+### 2.5 Validate against reference dataset
+
+We'll compare our processed data with the reference dataset to ensure correctness.
+
+```{r}
+#| label: validate_data
+#| echo: true
+
+# Load the reference dataset
+sg_ref <- read_csv(
+  "sg_5yr_cohorts.csv",
+  col_types = cols(sex = col_factor(levels = c("Male", "Female")))
+)
+
+# Filter the reference dataset to match our age filter (age <= 85)
+sg_ref <- sg_ref %>% filter(age <= 85)
+
+# Compare our data with the reference
+waldo::compare(data_relevant_years, sg_ref, tolerance = 1e-12)
+```

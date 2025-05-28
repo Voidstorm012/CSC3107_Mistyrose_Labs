@@ -1,0 +1,87 @@
+---
+title: "Lab2"
+author: "Peh Boon Yew"
+format: html
+editor: visual
+---
+
+# 1. Country-Level Statistics from the World Bank
+
+## Import Data & Filter Data to Restrict to Actual Countries
+
+```{r}
+#| label: Import Data & Filter Data to Restrict to Actual Countries
+#| message: false
+
+# Import library 
+library(tidyverse)
+library(readxl)
+
+# Read the data of multiple files
+gdp <- read_excel("API_NY.GDP.PCAP.CD_DS2_en_excel_v2_85284.xls", skip = 3) %>% 
+select(`Country Name`,`Country Code`, gdp = `2019`)
+life <- read_excel("API_SP.DYN.LE00.IN_DS2_en_excel_v2_85119.xls", skip = 3) %>% 
+select(`Country Name`, life = `2019`)
+population <- read_excel("API_SP.POP.TOTL_DS2_en_excel_v2_85347.xls", skip = 3) %>%
+select(`Country Name`, pop = `2019`)
+
+# Aggregating multiple files into one data frame
+gdp_life <- inner_join(gdp, life, join_by("Country Name"))
+gdp_life_pop  <- inner_join(gdp_life, population, join_by("Country Name")) 
+
+# Print output
+gdp_life_pop
+```
+
+## Adding Continent Information
+
+```{r}
+#| label: Adding Continent Information
+#| message: false
+
+# Import necessary libraries
+library(countrycode)
+
+# Adding "Continent" column into data frame
+wb <- codelist |> select(wb,continent)
+country <- inner_join(gdp_life_pop, wb, join_by("Country Code"==wb))
+
+# Print output
+country
+```
+
+## Formatting Data, Checking for Missing Values
+
+```{r}
+#| label: Formating Data
+#| message: false
+
+# Renaming the columns
+colnames(country) <- c("name", "code", "gdp_per_cap", "life_exp", "pop", "continent")
+
+# Check for missing data, and order the country name alphabetically
+country <- arrange(country, name)
+country <- drop_na(country)
+
+# Print output
+country
+```
+
+## Comparing to Final Results
+
+```{r}
+#| label: Compare to actual data
+#| message: false
+
+# Compare to actual data
+world_ref <- readr::read_csv("country_profiles_2019.csv")
+waldo::compare(country, world_ref, tolerance = 1e-12)
+```
+
+# 3.Reflections
+
+1.  **Key takeaway**: Learned how to combine multiple data sets using inner join, data cleaning to clean out NA fields with drop NA and how piping can take a output and chain it as input from the previous function called.
+2.  **Challenges**: import data section where i have to combine multiple data sets together while also filtering specific features from each data set.
+3.  **AI assistance**: Use ChatGPT to help assist in learning on which function of tidyverse library can be used and also examples to help understand the library functions better.
+4.  **Teamwork**: We divide 2 questions among our 6 members, 3 members took each question and one of the strength is we are able to work and coordinate together while there is also room for improvement in coordinating better.
+5.  **Additional feedback**: Preferably increase the deadline for submission from instead of every Friday to either Sunday or 7 days from the point of tutorial release.
