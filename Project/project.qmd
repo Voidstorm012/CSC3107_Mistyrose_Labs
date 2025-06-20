@@ -13,6 +13,50 @@ wildfire <- read_csv("wildfire_data.csv")
 wildfire
 ```
 
+Original Plot
+
+```{r}
+library(tidyverse)
+library(scales)
+
+# Read data
+wildfire <- read_csv("wildfire_data.csv")
+
+# Plot
+ggplot(wildfire, aes(x = Year)) +
+  # Bar chart for Acres
+  geom_col(aes(y = Acres), fill = "orange", alpha = 0.7) +
+  
+  # Line chart for Fires on secondary axis, rescaled
+  geom_line(aes(y = Fires * (max(Acres) / max(Fires))), color = "steelblue", size = 1.2) +
+  
+  # Optional: Add linear trend line for Fires
+  geom_smooth(aes(y = Fires * (max(Acres) / max(Fires))), 
+              method = "lm", se = FALSE, linetype = "dotted", color = "steelblue") +
+  
+  # Axis labels and titles
+  scale_y_continuous(
+    name = "Acres",
+    sec.axis = sec_axis(~ . / (max(wildfire$Acres) / max(wildfire$Fires)), name = "Fires")
+  ) +
+  
+  labs(
+    title = "Total Wildland Fires & Acres, 1926–2017",
+    subtitle = "National Interagency Fire Center",
+    x = "Year"
+  ) +
+  
+  theme_minimal() +
+  theme(
+    axis.title.y.left = element_text(color = "orange"),
+    axis.title.y.right = element_text(color = "steelblue"),
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
 Plot in col
 
 ```{r}
