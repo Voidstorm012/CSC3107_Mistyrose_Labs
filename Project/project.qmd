@@ -44,7 +44,8 @@ Using scrapper, we extracted the dataset from the link above and store it as CSV
 ```{r}
 #| label: Load libraries and data
 
-wildfires <- read_csv("wildfire_data.csv")
+
+wildfires <- read_csv("wildfire_data.csv", show_col_types = FALSE)
 
 wildfires
 ```
@@ -63,6 +64,9 @@ The fill = NA argument ensures that values at the boundaries, where a full 5 -
 year window isn’t available, are left as missing. The align = "center" option centers the moving window on each year, providing a balanced smoothing effect.
 
 ```{r}
+#| label: Load and prepare data
+
+
 wildfires <- wildfires %>%
   mutate(
     Fires_MA = rollmean(Fires, 5, fill = NA, align = "center"),
@@ -72,14 +76,29 @@ wildfires <- wildfires %>%
 wildfires
 ```
 
+The following code cleans the data by removing rows with missing values in the Fires_MA and Acres_MA columns. This step is crucial for ensuring that our visualizations are accurate and do not include gaps in the data.
+
 ```{r}
+#| label: Clean data
+
+
 wildfires_clean <- wildfires %>%
   drop_na(Fires_MA, Acres_MA)
 
 wildfires_clean
 ```
 
+# Visualizing the Data
+
+The following code creates a base plot using ggplot2, which includes two lines: one for the 5-year moving average of acres burned and another for the 5-year moving average of the number of fires. The first line is colored forest green, representing the acres burned, while the second line is colored firebrick, representing the number of fires. The linewidth argument is set to 1.2 for both lines to enhance visibility.
+
 ```{r}
+#| label: Base plot
+#| fig-cap: "Base plot of Wildfires in the U.S. (1926–2017)"
+#| fig-width: 8
+#| fig-height: 5
+
+
 base_plot <- ggplot(wildfires_clean, aes(x = Year)) +
   geom_line(aes(y = Acres_MA),
             color = "forestgreen",
@@ -91,8 +110,15 @@ base_plot <- ggplot(wildfires_clean, aes(x = Year)) +
 base_plot
 ```
 
+The following code adds vertical lines and annotations to the base plot. The vertical line at 1983 is drawn with a dotted gray line to indicate a change in reporting standards, and two text annotations are added to provide context for this change and to explain the early decrease in wildfires, likely due to improved fire suppression techniques.
 
 ```{r}
+#| label: Annotated plot
+#| fig-cap: "Annotated plot of Wildfires in the U.S. (1926–2017)"
+#| fig-width: 8
+#| fig-height: 5
+
+
 annotated_plot <- base_plot + geom_vline(xintercept = 1983,
                                          linetype = "dotted",
                                          color = "gray30") +
@@ -118,8 +144,15 @@ annotated_plot <- base_plot + geom_vline(xintercept = 1983,
 annotated_plot
 ```
 
+The following code adds labels to the y-axis, including a secondary axis for the number of fires, and includes titles and captions to provide context for the data. The primary y-axis represents acres burned (smoothed), while the secondary y-axis represents the number of fires (smoothed) scaled down by a factor of 150 to fit within the same plot.
 
 ```{r}
+#| label: Labelled plot
+#| fig-cap: "Labelled plot of Wildfires in the U.S. (1926–2017)"
+#| fig-width: 8
+#| fig-height: 5
+
+
 labelled_plot <- annotated_plot +
   scale_y_continuous(name = "Acres Burned (Smoothed)",
                      sec.axis = sec_axis(
@@ -136,7 +169,15 @@ labelled_plot <- annotated_plot +
 labelled_plot
 ```
 
+The following code applies a minimal theme to the plot, enhancing its readability and visual appeal. The theme includes bold titles, colored y-axis labels, and a clean layout.
+
 ```{r}
+#| label: Final plot
+#| fig-cap: "Final plot of Wildfires in the U.S. (1926–2017)"
+#| fig-width: 8
+#| fig-height: 5
+
+
 final_plot <- labelled_plot + theme_minimal(base_size = 13) +
   theme(
     plot.title = element_text(face = "bold"),
