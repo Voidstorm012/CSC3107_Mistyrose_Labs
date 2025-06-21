@@ -1,164 +1,142 @@
 ---
-title: "Project"
+title: "Visualizing Wildfire data in the USA (1926--2017)"
+author: "SKYRA CHOO, TAY YONG JUN, PEH BOON YEW, HO KING HONH, SEAN LEE WEI CHUAN, MUHAMMAD SYAHMI BIN SAMRI"
 format: html
 editor: visual
 ---
 
-Import library and data
+# Introduction
 
+Help me on this
+
+The following code requires the following packages:
 ```{r}
+#| label :  Load libraries
+#| message :  false
+
 library(tidyverse)
 library(dplyr)
-wildfire <- read_csv("wildfire_data.csv")
-wildfire
+library(knitr)
+library(zoo)
 ```
 
-Original Plot
+```{r}
+#| label:  fig-previous-visualization
+#| fig-cap:  "Help me on this"
+
+include_graphics("images/previous_visualization.png")
+```
+
+# Dataset
+
+https://www.nifc.gov/fire-information/statistics/wildfires
+
+Using scrapper, we extracted the dataset from the link above and store it as CSV
+
+# Load Data
 
 ```{r}
-library(tidyverse)
-library(scales)
+#| label:  Load libraries and data
 
-# Read data
-wildfire <- read_csv("wildfire_data.csv")
+wildfires <- read_csv("wildfire_data.csv")
 
-# Plot
-ggplot(wildfire, aes(x = Year)) +
-  # Bar chart for Acres
-  geom_col(aes(y = Acres), fill = "orange", alpha = 0.7) +
-  
-  # Line chart for Fires on secondary axis, rescaled
-  geom_line(aes(y = Fires * (max(Acres) / max(Fires))), color = "steelblue", size = 1.2) +
-  
-  # Optional: Add linear trend line for Fires
-  geom_smooth(aes(y = Fires * (max(Acres) / max(Fires))), 
-              method = "lm", se = FALSE, linetype = "dotted", color = "steelblue") +
-  
-  # Axis labels and titles
-  scale_y_continuous(
-    name = "Acres",
-    sec.axis = sec_axis(~ . / (max(wildfire$Acres) / max(wildfire$Fires)), name = "Fires")
-  ) +
-  
-  labs(
-    title = "Total Wildland Fires & Acres, 1926–2017",
-    subtitle = "National Interagency Fire Center",
-    x = "Year"
-  ) +
-  
-  theme_minimal() +
-  theme(
-    axis.title.y.left = element_text(color = "orange"),
-    axis.title.y.right = element_text(color = "steelblue"),
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    axis.text.x = element_text(angle = 45, hjust = 1)
+wildfires
+```
+
+# Data Cleaning
+
+In the original visualization, the lines appear jagged due to year - to -
+year variability. To address this, we apply a 5 - year moving average, which smooths out short -
+term fluctuations and reveals longer - term trends more clearly. This process creates two new columns:
+
+-   Fires_MA:a **5 - year moving average** of the Fires column.
+
+-   Acres_MA:a **5 - year moving average** of the Acres column.
+
+The fill = NA argument ensures that values at the boundaries, where a full 5 -
+year window isn’t available, are left as missing. The align = "center" option centers the moving window on each year, providing a balanced smoothing effect.
+
+```{r}
+wildfires <- wildfires %>%
+  mutate(
+    Fires_MA = rollmean(Fires, 5, fill = NA, align = "center"),
+    Acres_MA = rollmean(Acres, 5, fill = NA, align = "center")
   )
 
+wildfires
 ```
 
-Plot in col
-
 ```{r}
-library(tidyverse)
-library(scales)
+wildfires_clean <- wildfires %>%
+  drop_na(Fires_MA, Acres_MA)
 
-# Read the wildfire data
-wildfire <- read_csv("wildfire_data.csv")
-
-# Create the dual-axis plot
-ggplot(wildfire, aes(x = Year)) +
-  # Green bars for Acres
-  geom_col(aes(y = Acres), fill = "forestgreen", alpha = 0.7) +
-  
-  # Red line for Fires (rescaled to match Acres)
-  geom_line(aes(y = Fires * (max(Acres) / max(Fires))), color = "firebrick", size = 1.2) +
-  
-  # Optional red dotted trend line for Fires
-  geom_smooth(aes(y = Fires * (max(Acres) / max(Fires))),
-              method = "lm", se = FALSE, linetype = "dotted", color = "firebrick") +
-  
-  # Y-axis with full numbers and secondary axis for Fires
-  scale_y_continuous(
-    name = "Acres",
-    labels = comma,  # Format with commas
-    sec.axis = sec_axis(
-      trans = ~ . / (max(wildfire$Acres) / max(wildfire$Fires)),
-      name = "Fires"
-    )
-  ) +
-  
-  # X-axis: Show ticks every 10 years
-  scale_x_continuous(
-    breaks = seq(min(wildfire$Year), max(wildfire$Year), by = 10)
-  ) +
-  
-  # Labels and styling
-  labs(
-    title = "Total Wildland Fires & Acres, 1926–2017",
-    subtitle = "National Interagency Fire Center",
-    x = "Year"
-  ) +
-  theme_minimal() +
-  theme(
-  axis.title.y.left = element_text(color = "forestgreen", angle = 0, vjust = 0.5),
-  axis.title.y.right = element_text(color = "firebrick", angle = 0, vjust = 0.5),
-  plot.title = element_text(size = 16, face = "bold"),
-  plot.subtitle = element_text(size = 12),
-  axis.text.x = element_text(angle = 45, hjust = 1)
-)
-
-
-
-
+wildfires_clean
 ```
 
-plot
+```{r}
+base_plot <- ggplot(wildfires_clean, aes(x = Year)) +
+  geom_line(aes(y = Acres_MA),
+            color = "forestgreen",
+            linewidth = 1.2) +
+  geom_line(aes(y = Fires_MA * 150),
+            color = "firebrick",
+            linewidth = 1.2)
+
+base_plot
+```
+
 
 ```{r}
-library(tidyverse)
-library(scales)
-
-wildfire <- read_csv("wildfire_data.csv")
-
-scale_factor <- max(wildfire$Acres) / max(wildfire$Fires)
-
-ggplot(wildfire, aes(x = Year)) +
-  # Acres as green line
-  geom_line(aes(y = Acres), color = "forestgreen", size = 1.2) +
-  
-  # Fires as red area (scaled)
-  geom_area(aes(y = Fires * scale_factor), fill = "firebrick", alpha = 0.4) +
-  
-  # Optional: dotted trend line for Fires
-  geom_smooth(aes(y = Fires * scale_factor), method = "lm", se = FALSE, linetype = "dotted", color = "firebrick") +
-  
-  scale_y_continuous(
-    name = "Acres",
-    labels = comma,
-    sec.axis = sec_axis(
-      trans = ~ . / scale_factor,
-      name = "Fires"
-    )
+annotated_plot <- base_plot + geom_vline(xintercept = 1983,
+                                         linetype = "dotted",
+                                         color = "gray30") +
+  annotate(
+    "text",
+    x = 1984,
+    y = max(wildfires$Acres, na.rm = TRUE),
+    label = "1983: Change in reporting standards",
+    hjust = 0,
+    size = 3.5,
+    color = "gray30"
   ) +
-  
-  scale_x_continuous(
-    breaks = seq(min(wildfire$Year), max(wildfire$Year), by = 10)
-  ) +
-  
-  labs(
-    title = "Total Wildland Fires & Acres, 1926–2017",
-    subtitle = "National Interagency Fire Center",
-    x = "Year"
-  ) +
-  
-  theme_minimal() +
-  theme(
-    axis.title.y.left = element_text(color = "forestgreen", angle = 0, vjust = 0.5),
-    axis.title.y.right = element_text(color = "firebrick", angle = 0, vjust = 0.5),
-    plot.title = element_text(size = 16, face = "bold"),
-    plot.subtitle = element_text(size = 12),
-    axis.text.x = element_text(angle = 45, hjust = 1)
+  annotate(
+    "text",
+    x = 1935,
+    y = max(wildfires$Acres, na.rm = TRUE) * 0.85,
+    label = "Early decrease likely due to improved fire suppression",
+    size = 3.5,
+    hjust = 0,
+    color = "gray30"
   )
 
+annotated_plot
+```
+
+
+```{r}
+labelled_plot <- annotated_plot +
+  scale_y_continuous(name = "Acres Burned (Smoothed)",
+                     sec.axis = sec_axis(
+                       ~ . / 150, name = "Number of Fires (Smoothed)"
+                     )) +
+  labs(
+    title = "Wildfires in the U.S. (1926–2017): Contextualizing the Trends",
+    subtitle = "Smoothed trends show a decline in number of fires over time, 
+    despite claims linking wildfires to climate change",
+    x = "Year",
+    caption = "Source: National Interagency Fire Center"
+  )
+
+labelled_plot
+```
+
+```{r}
+final_plot <- labelled_plot + theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title.y = element_text(color = "forestgreen"),
+    axis.title.y.right = element_text(color = "firebrick")
+  )
+
+final_plot
 ```
