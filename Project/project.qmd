@@ -1,8 +1,14 @@
 ---
 title: "Visualizing Wildfire data in the USA (1926--2017)"
-author: "SKYRA CHOO, TAY YONG JUN, PEH BOON YEW, HO KING HONH, SEAN LEE WEI CHUAN, MUHAMMAD SYAHMI BIN SAMRI"
+author:
+  <u>P1 Team Mistyrose</u> </br>
+  Skyra Choo (2301185) <br/>
+  Tay Yong Jun (2300993) <br/>
+  Peh Boon Yew (2301057) <br/>
+  Ho King Honh (2301174) <br/>
+  Sean Lee Wei Chuan (2303423) <br/>
+  Syahmi Bin Samri (2301125)
 format: html
-editor: visual
 ---
 
 # Introduction
@@ -11,8 +17,8 @@ Help me on this
 
 The following code requires the following packages:
 ```{r}
-#| label :  Load libraries
-#| message :  false
+#| label: Load libraries
+#| message: false
 
 library(tidyverse)
 library(dplyr)
@@ -21,8 +27,8 @@ library(zoo)
 ```
 
 ```{r}
-#| label:  fig-previous-visualization
-#| fig-cap:  "Help me on this"
+#| label: fig-previous-visualization
+#| fig-cap: "Help me on this"
 
 include_graphics("images/previous_visualization.png")
 ```
@@ -36,7 +42,7 @@ Using scrapper, we extracted the dataset from the link above and store it as CSV
 # Load Data
 
 ```{r}
-#| label:  Load libraries and data
+#| label: Load libraries and data
 
 wildfires <- read_csv("wildfire_data.csv")
 
