@@ -24,6 +24,7 @@ library(tidyverse)
 library(dplyr)
 library(knitr)
 library(zoo)
+library(scales)
 ```
 
 ```{r}
@@ -152,17 +153,22 @@ The following code adds labels to the y-axis, including a secondary axis for the
 #| fig-width: 8
 #| fig-height: 5
 
-
 labelled_plot <- annotated_plot +
-  scale_y_continuous(name = "Acres Burned (Smoothed)",
-                     sec.axis = sec_axis(
-                       ~ . / 150, name = "Number of Fires (Smoothed)"
-                     )) +
+  scale_y_continuous(
+    labels = label_number(scale_cut = cut_short_scale()),  # Left y-axis
+    sec.axis = sec_axis(~ . / 150,
+                        name = "Number of Fires (Smoothed)",
+                        labels = label_number(scale_cut = cut_short_scale()))
+  ) +
   labs(
     title = "Wildfires in the U.S. (1926–2017): Contextualizing the Trends",
-    subtitle = "Smoothed trends show a decline in number of fires over time, 
-    despite claims linking wildfires to climate change",
+    subtitle = paste(
+      "Smoothed trends using 5-year moving averages for acres burned",
+      "and number of fires"
+    ),
+    y = "Acres Burned (Smoothed)",
     x = "Year",
+    color = "Legend",
     caption = "Source: National Interagency Fire Center"
   )
 
