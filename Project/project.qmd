@@ -205,12 +205,35 @@ eras <- data.frame(
   xmax = c(1936, 1955, 1977, 1983, 2015, 2024),
   fill = brewer.pal(6, "Pastel2"),
   label = c(
-    "(1926-1936)\nPre-Smokey Bear\n& the Dust Bowl",
-    "(1936-1955)\nSmokey Bear\n& Implementation\nof\n10 a.m. Policy",
-    "(1955-1977)\n10 a.m. rule remained in force &\nfederal budgets for\nwildfire grew rapidly", # nolint: line_length_linter
-    "(1977 - 1983)\nNew national\nfire‐reporting\nsystem,\neliminated\nduplicates &\nstricter record\ncriteria", # nolint: line_length_linter
-    "(1983 - 2015)\nTotal area burned trends ↑,\nignition counts stay flat or fall,\nindicating longer fire seasons", # nolint: line_length_linter
-    "(2015 - 2024)\nSuccessful\nignition‐prevention\ncampaigns & better\ninfrastructure catch\nto small fires early" # nolint: line_length_linter
+    "(1926-1936)
+Pre-Smokey Bear
+& the Dust Bowl",
+    "(1936-1955)
+Smokey Bear
+& Implementation
+of 10 a.m. Policy",
+    "(1955-1977)
+10 a.m. Policy remained in force,
+federal budgets for wildfire grew
+rapidly in the post-war boom",
+    "(1977 - 1983)
+New national
+fire‐reporting
+system,
+eliminated
+duplicates &
+stricter record
+criteria",
+    "(1983 - 2015)
+Total area burned trends ↑,
+ignition counts stay flat or fall,
+indicating longer fire seasons",
+    "(2015 - 2024)
+Successful
+ignition‐prevention
+campaigns & better
+infrastructure catch
+to small fires early"
   ),
   vjust = c(2.0, 1.875, 3.125, 1.75, 2.75, 1.375),
   hjust = c(0.5, 0.5, 0.65, 0.5, 0.75, 0.5),
@@ -317,7 +340,8 @@ p_temp <- ggplot(df, aes(Year, Temp_MA)) +
   annotate("label",
     x = 1928,
     y = 0.5,
-    label = "Although average acres burned per fire was relatively high during this period,\ntemperature anomalies increased slightly or decreased.", # nolint: line_length_linter
+    label = "Although average acres burned per fire was relatively high during
+this period, temperature anomalies increased slightly or decreased.",
     hjust = 0,
     size = 6,
     fill = "white",
@@ -329,7 +353,8 @@ p_temp <- ggplot(df, aes(Year, Temp_MA)) +
   annotate("label",
     x = 1976,
     y = 1.0,
-    label = "Temperature continues to increase, yet wildfires remain relatively low.\nThere is no resurgence of fire sizes in modern climate change.", # nolint: line_length_linter
+    label = "Temperature continues to increase, yet wildfires remain relatively
+low. There is no resurgence of fire sizes in modern climate change.",
     hjust = 0,
     size = 6,
     fill = "white",
@@ -341,7 +366,8 @@ p_temp <- ggplot(df, aes(Year, Temp_MA)) +
   annotate("label",
     x = 1994,
     y = 0.125,
-    label = "Across almost a century, wildfire metrics fell significantly while\naverage global temperature anomaly rose steadily.", # nolint: line_length_linter
+    label = "Across almost a century, wildfire metrics fell significantly while
+average global temperature anomaly rose steadily.",
     hjust = 0,
     size = 6,
     fill = "white",
@@ -465,7 +491,8 @@ We then call `plot_annotation()` to add a descriptive title and source caption i
 final_plot <- (p_ratio / p_temp) / (p_fires | p_acres) +
   plot_layout(heights = c(1.5, 1.5, 1.0)) +
   plot_annotation(
-    title = "Trends in U.S. Wildfires and Temperature Anomalies from 1926 to 2024", # nolint: line_length_linter
+    title = paste0("Trends in U.S. Wildfires and Temperature Anomalies",
+                   "from 1926 to 2024"),
     caption = paste0(
       "Sources:\n",
       "Wildfires: NIFC\n",
