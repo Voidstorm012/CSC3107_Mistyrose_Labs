@@ -7,7 +7,7 @@ author:
   Peh Boon Yew (2301057) <br/>
   Ho King Honh (2301174) <br/>
   Sean Lee Wei Chuan (2303423) <br/>
-  Syahmi Bin Samri (2301125)
+  Muhammad Syahmi Bin Samri (2301125)
 format: html
 ---
 
